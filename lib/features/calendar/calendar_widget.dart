@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:table_calendar/table_calendar.dart';
 import '../../providers/calendar_provider.dart';
 import '../../providers/activities_provider.dart';
-import '../../providers/completions_provider.dart';
 import '../../providers/settings_provider.dart';
 import '../../core/constants/app_colors.dart';
 
@@ -86,11 +85,7 @@ class CalendarWidget extends ConsumerWidget {
             fontWeight: FontWeight.w500,
           ),
           outsideDaysVisible: false,
-          markersMaxCount: 1,
-          markerDecoration: BoxDecoration(
-            color: AppColors.success,
-            shape: BoxShape.circle,
-          ),
+          markersMaxCount: 0, // Disable dots, we use background colors
           cellMargin: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
         ),
         onDaySelected: (selectedDay, focusedDay) {
@@ -105,62 +100,90 @@ class CalendarWidget extends ConsumerWidget {
           ref.read(focusedMonthProvider.notifier).state = DateTime(focusedDay.year, focusedDay.month, 1);
         },
         calendarBuilders: CalendarBuilders(
-          markerBuilder: (context, date, events) {
-            return _DateIndicator(date: date);
-          },
+          defaultBuilder: (context, day, focusedDay) => _DateCell(day: day),
+          todayBuilder: (context, day, focusedDay) => _DateCell(day: day, isToday: true),
+          selectedBuilder: (context, day, focusedDay) => _DateCell(day: day, isSelected: true),
         ),
       ),
     );
   }
 }
 
-/// Internal widget that builds date indicators (green/red dots).
-class _DateIndicator extends ConsumerWidget {
-  final DateTime date;
-  const _DateIndicator({required this.date});
+/// Internal widget that builds date cells with background colors.
+class _DateCell extends ConsumerWidget {
+  final DateTime day;
+  final bool isToday;
+  final bool isSelected;
+
+  const _DateCell({
+    required this.day,
+    this.isToday = false,
+    this.isSelected = false,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final activitiesAsync = ref.watch(activitiesForDateProvider(date));
+    final statusAsync = ref.watch(dateIndicatorProvider(day));
+    
+    return statusAsync.when(
+      data: (status) => _buildCell(context, status),
+      loading: () => _buildCell(context, DateIndicatorStatus.none),
+      error: (_, __) => _buildCell(context, DateIndicatorStatus.none),
+    );
+  }
 
-    return activitiesAsync.when(
-      data: (activities) {
-        if (activities.isEmpty) return const SizedBox.shrink();
+  Widget _buildCell(BuildContext context, DateIndicatorStatus status) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textColor = colorScheme.onSurface;
+    final weekendColor = colorScheme.error;
+    final isWeekend = day.weekday == 6 || day.weekday == 7;
+    
+    Color? backgroundColor;
+    Color textCol = isWeekend ? weekendColor : textColor;
+    FontWeight fontWeight = FontWeight.normal;
 
-        return FutureBuilder<List<bool>>(
-          future: Future.wait(
-            activities.map((a) async {
-              final completions = await ref.read(completionsForDateProvider(date).future);
-              return completions[a.id]?.isCompleted ?? false;
-            }),
+    if (isSelected) {
+      backgroundColor = AppColors.primary;
+      textCol = Colors.white;
+      fontWeight = FontWeight.w600;
+    } else if (isToday) {
+      backgroundColor = AppColors.primary.withValues(alpha: 0.3);
+      textCol = textColor;
+      fontWeight = FontWeight.w600;
+    } else {
+      // Apply pastel background based on status
+      switch (status) {
+        case DateIndicatorStatus.complete:
+          backgroundColor = AppColors.pastelGreen;
+          break;
+        case DateIndicatorStatus.missed:
+          backgroundColor = AppColors.pastelRed;
+          break;
+        case DateIndicatorStatus.incomplete:
+          backgroundColor = AppColors.pastelPrimary;
+          break;
+        case DateIndicatorStatus.none:
+        case DateIndicatorStatus.selected:
+          // No background color
+          break;
+      }
+    }
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        shape: BoxShape.circle,
+      ),
+      child: Center(
+        child: Text(
+          '${day.day}',
+          style: TextStyle(
+            color: textCol,
+            fontWeight: fontWeight,
           ),
-          builder: (context, snapshot) {
-            if (!snapshot.hasData || snapshot.data!.isEmpty) {
-              return const SizedBox.shrink();
-            }
-            final allComplete = snapshot.data!.every((c) => c);
-            final anyComplete = snapshot.data!.any((c) => c);
-
-            if (!anyComplete) return const SizedBox.shrink();
-
-            return Positioned(
-              bottom: 1,
-              child: Container(
-                width: 6,
-                height: 6,
-                decoration: BoxDecoration(
-                  color: allComplete
-                      ? AppColors.success
-                      : AppColors.warning,
-                  shape: BoxShape.circle,
-                ),
-              ),
-            );
-          },
-        );
-      },
-      loading: () => const SizedBox.shrink(),
-      error: (_, __) => const SizedBox.shrink(),
+        ),
+      ),
     );
   }
 }

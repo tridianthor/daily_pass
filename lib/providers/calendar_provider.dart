@@ -16,8 +16,11 @@ enum DateIndicatorStatus {
   /// All scheduled activities are completed.
   complete,
   
-  /// Some activities are incomplete.
+  /// Some activities are incomplete (future date).
   incomplete,
+  
+  /// Activities missed (past date with incomplete activities).
+  missed,
   
   /// This date is currently selected (for UI highlighting).
   selected,
@@ -155,7 +158,18 @@ final dateIndicatorProvider = FutureProvider.family<DateIndicatorStatus, DateTim
     return completion?.isCompleted ?? false;
   });
   
-  return allComplete ? DateIndicatorStatus.complete : DateIndicatorStatus.incomplete;
+  if (allComplete) {
+    return DateIndicatorStatus.complete;
+  }
+  
+  // Check if date is in the past (missed activities)
+  final now = DateTime.now();
+  final today = DateTime(now.year, now.month, now.day);
+  if (normalizedDate.isBefore(today)) {
+    return DateIndicatorStatus.missed;
+  }
+  
+  return DateIndicatorStatus.incomplete;
 });
 
 /// Provider for activities scheduled on a specific date.
@@ -168,30 +182,23 @@ final activitiesForDateProvider = FutureProvider.family<List<Activity>, DateTime
 /// Provider to get completion statistics for a date range.
 final completionStatsForRangeProvider = FutureProvider.family<Map<String, int>, DateTimeRange>((ref, range) async {
   final activities = await ref.watch(allActivitiesProvider.future);
+  final completions = await ref.watch(completionsForDateProvider(range.start).future);
+  
   int total = 0;
   int completed = 0;
   
-  // Iterate through each day in the range
-  var current = range.start;
-  while (current.isBefore(range.end) || current.isAtSameMomentAs(range.end)) {
-    final activitiesOnDate = activities.where((a) => _isActivityOnDate(a, current)).toList();
-    final completions = await ref.watch(completionsForDateProvider(current).future);
-    
+  for (var date = range.start; !date.isAfter(range.end); date = date.add(const Duration(days: 1))) {
+    final activitiesOnDate = activities.where((a) => _isActivityOnDate(a, date)).toList();
     for (final activity in activitiesOnDate) {
       total++;
-      if (completions[activity.id]?.isCompleted ?? false) {
+      final completion = completions[activity.id];
+      if (completion?.isCompleted ?? false) {
         completed++;
       }
     }
-    
-    current = current.add(const Duration(days: 1));
   }
   
-  return {
-    'total': total,
-    'completed': completed,
-    'percentage': total > 0 ? ((completed / total) * 100).round() : 0,
-  };
+  return {'total': total, 'completed': completed};
 });
 
 /// Helper class for date ranges

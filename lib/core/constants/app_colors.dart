@@ -23,4 +23,9 @@ class AppColors {
   static const Color darkSurface = Color(0xFF1E293B);
   static const Color darkOnBackground = Color(0xFFF1F5F9);
   static const Color darkOnSurface = Color(0xFFCBD5E1);
+
+  // Calendar pastel colors for date indicators
+  static const Color pastelGreen = Color(0xFF86EFAC);   // activities completed
+  static const Color pastelRed = Color(0xFFFCA5A5);     // activities missed (past + incomplete)
+  static const Color pastelPrimary = Color(0xFFA5B4FC);  // activity exists (scheduled)
 }
