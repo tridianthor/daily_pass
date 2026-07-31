@@ -16,7 +16,9 @@ class Completion {
   Map<String, dynamic> toMap() => {
         'id': id,
         'activity_id': activityId,
-        'completed_date': completedDate.toIso8601String(),
+        'completed_date': '${completedDate.year.toString().padLeft(4, '0')}-'
+            '${completedDate.month.toString().padLeft(2, '0')}-'
+            '${completedDate.day.toString().padLeft(2, '0')}',
         'completed_at': completedAt.toIso8601String(),
         'is_completed': isCompleted ? 1 : 0,
       };

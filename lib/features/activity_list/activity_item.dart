@@ -29,168 +29,165 @@ class _ActivityItemState extends ConsumerState<ActivityItem> {
 
   @override
   Widget build(BuildContext context) {
-    // Watch completion status for this specific activity and date
+    // Normalize date to midnight for consistent provider keys
+    final normalizedDate = DateTime(
+      widget.date.year,
+      widget.date.month,
+      widget.date.day,
+    );
+    
     final completionAsync = ref.watch(
-      completionStatusProvider((widget.activity.id, widget.date)),
+      completionStatusProvider((widget.activity.id, normalizedDate)),
     );
 
     return completionAsync.when(
-      data: (completion) {
-        final isCompleted = completion?.isCompleted ?? false;
+      data: (completion) => _buildContent(context, completion?.isCompleted ?? false, normalizedDate),
+      loading: () => _buildLoading(),
+      error: (_, __) => _buildContent(context, false, normalizedDate),
+    );
+  }
 
-        return Dismissible(
-          key: Key(widget.activity.id),
-          direction: DismissDirection.horizontal,
-          background: _SwipeBackground(
-            color: isCompleted ? Colors.orange : Colors.green,
-            icon: isCompleted ? Icons.undo : Icons.check,
-            alignment: Alignment.centerLeft,
-            label: isCompleted ? 'Undo' : 'Done',
-          ),
-          secondaryBackground: _SwipeBackground(
-            color: Colors.red,
-            icon: Icons.delete,
-            alignment: Alignment.centerRight,
-            label: 'Delete',
-          ),
-          confirmDismiss: (direction) async {
-            if (direction == DismissDirection.startToEnd) {
-              // Toggle completion
-              await _toggleCompletion(!isCompleted);
-              return false; // Don't dismiss, just toggle
-            } else {
-              // Delete with confirmation
-              return await _confirmDelete();
-            }
-          },
-          onDismissed: (direction) {
-            if (direction == DismissDirection.endToStart) {
-              _deleteActivity();
-            }
-          },
-          child: Card(
-            margin: const EdgeInsets.only(bottom: AppSpacing.sm),
-            elevation: 1,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+  Widget _buildLoading() {
+    return Card(
+      margin: const EdgeInsets.only(bottom: AppSpacing.sm),
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.md),
+        child: Row(
+          children: [
+            const SizedBox(width: 40),
+            Expanded(
+              child: Text(
+                widget.activity.name,
+                style: const TextStyle(fontSize: 16),
+              ),
             ),
-            child: InkWell(
-              onTap: _hasDetail
-                  ? () => setState(() => _isExpanded = !_isExpanded)
-                  : null,
-              onLongPress: _navigateToEdit,
-              borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-              child: Padding(
-                padding: const EdgeInsets.all(AppSpacing.md),
-                child: Row(
-                  children: [
-                    // Custom checkbox
-                    _CompletionCheckbox(
-                      isCompleted: isCompleted,
-                      onToggle: () => _toggleCompletion(!isCompleted),
-                    ),
-                    const SizedBox(width: AppSpacing.md),
-                    // Content
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildContent(BuildContext context, bool isCompleted, DateTime normalizedDate) {
+    return Dismissible(
+      key: Key(widget.activity.id),
+      direction: DismissDirection.horizontal,
+      background: _SwipeBackground(
+        color: isCompleted ? Colors.orange : Colors.green,
+        icon: isCompleted ? Icons.undo : Icons.check,
+        alignment: Alignment.centerLeft,
+        label: isCompleted ? 'Undo' : 'Done',
+      ),
+      secondaryBackground: _SwipeBackground(
+        color: Colors.red,
+        icon: Icons.delete,
+        alignment: Alignment.centerRight,
+        label: 'Delete',
+      ),
+      confirmDismiss: (direction) async {
+        if (direction == DismissDirection.startToEnd) {
+          await _toggleCompletion(!isCompleted, normalizedDate);
+          return false;
+        } else {
+          return await _confirmDelete();
+        }
+      },
+      onDismissed: (direction) {
+        if (direction == DismissDirection.endToStart) {
+          _deleteActivity();
+        }
+      },
+      child: Card(
+        margin: const EdgeInsets.only(bottom: AppSpacing.sm),
+        elevation: 1,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+        ),
+        child: InkWell(
+          onTap: () {
+            if (_hasDetail) {
+              setState(() => _isExpanded = !_isExpanded);
+            } else {
+              _toggleCompletion(!isCompleted, normalizedDate);
+            }
+          },
+          onLongPress: _navigateToEdit,
+          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.md),
+            child: Row(
+              children: [
+                _CompletionCheckbox(
+                  isCompleted: isCompleted,
+                  onToggle: () => _toggleCompletion(!isCompleted, normalizedDate),
+                ),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
                         children: [
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  widget.activity.name,
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w500,
-                                    decoration: isCompleted
-                                        ? TextDecoration.lineThrough
-                                        : null,
-                                    color: isCompleted
-                                        ? Colors.grey
-                                        : null,
-                                  ),
-                                ),
-                              ),
-                              if (_hasDetail)
-                                Icon(
-                                  _isExpanded
-                                      ? Icons.expand_less
-                                      : Icons.expand_more,
-                                  color: Colors.grey,
-                                ),
-                            ],
-                          ),
-                          if (_hasRepeatType)
-                            Padding(
-                              padding: const EdgeInsets.only(top: 4),
-                              child: Row(
-                                children: [
-                                  Icon(
-                                    Icons.repeat,
-                                    size: 14,
-                                    color: Colors.grey.shade600,
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    widget.activity.repeatType.displayName,
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.grey.shade600,
-                                    ),
-                                  ),
-                                ],
+                          Expanded(
+                            child: Text(
+                              widget.activity.name,
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                                decoration: isCompleted
+                                    ? TextDecoration.lineThrough
+                                    : null,
+                                color: isCompleted
+                                    ? Colors.grey
+                                    : null,
                               ),
                             ),
-                          if (_isExpanded && _hasDetail)
-                            Padding(
-                              padding: const EdgeInsets.only(top: AppSpacing.sm),
-                              child: Container(
-                                width: double.infinity,
-                                padding: const EdgeInsets.all(AppSpacing.sm),
-                                decoration: BoxDecoration(
-                                  color: Colors.grey.shade100,
-                                  borderRadius: BorderRadius.circular(
-                                    AppSpacing.radiusSm,
-                                  ),
-                                ),
-                                child: Text(
-                                  widget.activity.detail!,
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.grey.shade700,
-                                  ),
-                                ),
-                              ),
+                          ),
+                          if (_hasDetail)
+                            Icon(
+                              _isExpanded
+                                  ? Icons.expand_less
+                                  : Icons.expand_more,
+                              color: Colors.grey,
                             ),
                         ],
                       ),
-                    ),
-                  ],
+                      if (_isExpanded && _hasDetail)
+                        Padding(
+                          padding: const EdgeInsets.only(top: AppSpacing.sm),
+                          child: Text(
+                            widget.activity.detail!,
+                            style: TextStyle(
+                              color: Colors.grey.shade600,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                      if (_hasRepeatType)
+                        Padding(
+                          padding: const EdgeInsets.only(top: AppSpacing.xs),
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.repeat,
+                                size: 14,
+                                color: Colors.grey.shade500,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                widget.activity.repeatType.displayName,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey.shade500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
-              ),
+              ],
             ),
-          ),
-        );
-      },
-      loading: () => Card(
-        margin: const EdgeInsets.only(bottom: AppSpacing.sm),
-        child: ListTile(
-          leading: const SizedBox(
-            width: 24,
-            height: 24,
-            child: CircularProgressIndicator(strokeWidth: 2),
-          ),
-          title: Text(widget.activity.name),
-        ),
-      ),
-      error: (_, __) => Card(
-        margin: const EdgeInsets.only(bottom: AppSpacing.sm),
-        child: ListTile(
-          leading: Icon(Icons.error, color: Colors.red.shade400),
-          title: Text(
-            'Error loading status',
-            style: TextStyle(color: Colors.red.shade400),
           ),
         ),
       ),
@@ -202,70 +199,52 @@ class _ActivityItemState extends ConsumerState<ActivityItem> {
 
   bool get _hasRepeatType => widget.activity.repeatType != RepeatType.none;
 
-  Future<void> _toggleCompletion(bool isCompleted) async {
-    final completionService = ref.read(completionServiceProvider);
-    await completionService.toggleCompletion(
-      widget.activity.id,
-      widget.date,
-    );
+  Future<void> _toggleCompletion(bool isCompleted, DateTime normalizedDate) async {
+    try {
+      final completionService = ref.read(completionServiceProvider);
+      final activityId = widget.activity.id;
 
-    // Refresh providers to update UI
-    ref.invalidate(completionsForDateProvider(widget.date));
-    ref.invalidate(activitiesProvider);
-
-    if (mounted) {
       if (isCompleted) {
-        NotificationService.showSuccess(context, 'Great job!');
+        await completionService.markCompleted(activityId, normalizedDate);
       } else {
-        NotificationService.showInfo(context, 'Marked incomplete');
+        await completionService.markNotCompleted(activityId, normalizedDate);
+      }
+
+      ref.invalidate(completionsForDateProvider(normalizedDate));
+      ref.invalidate(completionStatusProvider((activityId, normalizedDate)));
+      ref.invalidate(dateIndicatorProvider(normalizedDate));
+    } catch (e) {
+      if (mounted) {
+        NotificationService.showError(context, 'Failed to update: $e');
       }
     }
   }
 
   Future<bool> _confirmDelete() async {
-    return await showDialog<bool>(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: const Text('Delete Activity?'),
-            content: const Text('This action cannot be undone.'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: const Text('Cancel'),
-              ),
-              TextButton(
-                onPressed: () => Navigator.pop(context, true),
-                child: const Text(
-                  'Delete',
-                  style: TextStyle(color: Colors.red),
-                ),
-              ),
-            ],
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Activity'),
+        content: Text('Delete "${widget.activity.name}"? This cannot be undone.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
           ),
-        ) ??
-        false;
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+    return result ?? false;
   }
 
   void _deleteActivity() {
-    final activityService = ref.read(activityServiceProvider);
-    final deletedActivity = widget.activity;
-
-    activityService.deleteActivity(widget.activity.id);
-    ref.invalidate(activitiesProvider);
-
-    NotificationService.showWithUndo(
-      context,
-      'Activity deleted',
-      () {
-        // Undo delete by recreating the activity
-        activityService.createActivity(
-          name: deletedActivity.name,
-          detail: deletedActivity.detail,
-          repeatType: deletedActivity.repeatType,
-        );
-        ref.invalidate(activitiesProvider);
-      },
-    );
+    ref.read(activityServiceProvider).deleteActivity(widget.activity.id);
+    ref.invalidate(allActivitiesProvider);
+    NotificationService.showSuccess(context, 'Activity deleted');
   }
 
   void _navigateToEdit() {
@@ -287,24 +266,19 @@ class _CompletionCheckbox extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onToggle,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        width: 28,
-        height: 28,
+      child: Container(
+        width: 24,
+        height: 24,
         decoration: BoxDecoration(
+          shape: BoxShape.circle,
           border: Border.all(
-            color: isCompleted ? Colors.green : Colors.grey.shade400,
+            color: isCompleted ? Colors.green : Colors.grey,
             width: 2,
           ),
-          borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
           color: isCompleted ? Colors.green : Colors.transparent,
         ),
         child: isCompleted
-            ? const Icon(
-                Icons.check,
-                size: 18,
-                color: Colors.white,
-              )
+            ? const Icon(Icons.check, size: 16, color: Colors.white)
             : null,
       ),
     );
@@ -328,34 +302,23 @@ class _SwipeBackground extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      alignment: alignment,
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+      margin: const EdgeInsets.only(bottom: AppSpacing.sm),
       decoration: BoxDecoration(
         color: color,
         borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
       ),
+      alignment: alignment,
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: alignment == Alignment.centerLeft
             ? [
                 Icon(icon, color: Colors.white),
                 const SizedBox(width: AppSpacing.sm),
-                Text(
-                  label,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
+                Text(label, style: const TextStyle(color: Colors.white)),
               ]
             : [
-                Text(
-                  label,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
+                Text(label, style: const TextStyle(color: Colors.white)),
                 const SizedBox(width: AppSpacing.sm),
                 Icon(icon, color: Colors.white),
               ],
