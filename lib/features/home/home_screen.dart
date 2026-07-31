@@ -10,6 +10,8 @@ class HomeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text(AppStrings.appName),
@@ -19,15 +21,18 @@ class HomeScreen extends ConsumerWidget {
             margin: const EdgeInsets.only(right: 8),
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
-              color: Colors.grey.shade300,
+              color: colorScheme.secondaryContainer,
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Row(
+            child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.cloud_off, size: 14),
-                SizedBox(width: 4),
-                Text(AppStrings.offline, style: TextStyle(fontSize: 12)),
+                Icon(Icons.cloud_off, size: 14, color: colorScheme.onSecondaryContainer),
+                const SizedBox(width: 4),
+                Text(
+                  AppStrings.offline,
+                  style: TextStyle(fontSize: 12, color: colorScheme.onSecondaryContainer),
+                ),
               ],
             ),
           ),
@@ -39,8 +44,6 @@ class HomeScreen extends ConsumerWidget {
       ),
       body: LayoutBuilder(
         builder: (context, constraints) {
-          // Mobile: split-screen (< 600dp)
-          // Desktop: sidebar + main (> 600dp)
           if (constraints.maxWidth < 600) {
             return const HomeMobileLayout();
           }

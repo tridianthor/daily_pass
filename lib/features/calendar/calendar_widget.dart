@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:table_calendar/table_calendar.dart';
 import '../../providers/calendar_provider.dart';
 import '../../providers/activities_provider.dart';
+import '../../providers/completions_provider.dart';
 import '../../providers/settings_provider.dart';
 import '../../core/constants/app_colors.dart';
 
@@ -16,6 +17,12 @@ class CalendarWidget extends ConsumerWidget {
     final selectedDate = ref.watch(selectedDateProvider);
     final focusedMonth = ref.watch(focusedMonthProvider);
     final weekStartDay = ref.watch(weekStartDayProvider);
+    
+    final colorScheme = Theme.of(context).colorScheme;
+    final textColor = colorScheme.onSurface;
+    final weekendColor = colorScheme.error;
+    final headerColor = colorScheme.onSurface;
+    final chevronColor = colorScheme.primary;
 
     return TableCalendar(
       firstDay: DateTime.utc(2020, 1, 1),
@@ -32,15 +39,25 @@ class CalendarWidget extends ConsumerWidget {
         titleTextStyle: TextStyle(
           fontSize: 18,
           fontWeight: FontWeight.w600,
-          color: AppColors.lightOnBackground,
+          color: headerColor,
         ),
-        leftChevronIcon: const Icon(
+        leftChevronIcon: Icon(
           Icons.chevron_left,
-          color: AppColors.primary,
+          color: chevronColor,
         ),
-        rightChevronIcon: const Icon(
+        rightChevronIcon: Icon(
           Icons.chevron_right,
-          color: AppColors.primary,
+          color: chevronColor,
+        ),
+      ),
+      daysOfWeekStyle: DaysOfWeekStyle(
+        weekdayStyle: TextStyle(
+          color: textColor,
+          fontWeight: FontWeight.w500,
+        ),
+        weekendStyle: TextStyle(
+          color: weekendColor,
+          fontWeight: FontWeight.w500,
         ),
       ),
       calendarStyle: CalendarStyle(
@@ -49,7 +66,7 @@ class CalendarWidget extends ConsumerWidget {
           shape: BoxShape.circle,
         ),
         todayTextStyle: TextStyle(
-          color: AppColors.lightOnBackground,
+          color: textColor,
           fontWeight: FontWeight.w600,
         ),
         selectedDecoration: BoxDecoration(
@@ -60,8 +77,12 @@ class CalendarWidget extends ConsumerWidget {
           color: Colors.white,
           fontWeight: FontWeight.w600,
         ),
+        defaultTextStyle: TextStyle(
+          color: textColor,
+        ),
         weekendTextStyle: TextStyle(
-          color: AppColors.lightOnBackground.withValues(alpha: 0.7),
+          color: weekendColor,
+          fontWeight: FontWeight.w500,
         ),
         outsideDaysVisible: false,
         markersMaxCount: 1,
@@ -72,7 +93,11 @@ class CalendarWidget extends ConsumerWidget {
       ),
       onDaySelected: (selectedDay, focusedDay) {
         ref.read(selectedDateProvider.notifier).state = selectedDay;
-        ref.read(focusedMonthProvider.notifier).state = focusedDay;
+        ref.read(focusedMonthProvider.notifier).state = DateTime(
+          focusedDay.year,
+          focusedDay.month,
+          1,
+        );
       },
       onPageChanged: (focusedDay) {
         ref.read(focusedMonthProvider.notifier).state = DateTime(focusedDay.year, focusedDay.month, 1);
@@ -93,29 +118,46 @@ class _DateIndicator extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final indicatorAsync = ref.watch(dateIndicatorProvider(date));
+    final activitiesAsync = ref.watch(activitiesForDateProvider(date));
 
-    return indicatorAsync.when(
-      data: (status) {
-        if (status == DateIndicatorStatus.none) {
-          return const SizedBox();
-        }
-        return Positioned(
-          bottom: 4,
-          child: Container(
-            width: 6,
-            height: 6,
-            decoration: BoxDecoration(
-              color: status == DateIndicatorStatus.complete
-                  ? AppColors.success
-                  : AppColors.error,
-              shape: BoxShape.circle,
-            ),
+    return activitiesAsync.when(
+      data: (activities) {
+        if (activities.isEmpty) return const SizedBox.shrink();
+
+        return FutureBuilder<List<bool>>(
+          future: Future.wait(
+            activities.map((a) async {
+              final completions = await ref.read(completionsForDateProvider(date).future);
+              return completions[a.id]?.isCompleted ?? false;
+            }),
           ),
+          builder: (context, snapshot) {
+            if (!snapshot.hasData || snapshot.data!.isEmpty) {
+              return const SizedBox.shrink();
+            }
+            final allComplete = snapshot.data!.every((c) => c);
+            final anyComplete = snapshot.data!.any((c) => c);
+
+            if (!anyComplete) return const SizedBox.shrink();
+
+            return Positioned(
+              bottom: 1,
+              child: Container(
+                width: 6,
+                height: 6,
+                decoration: BoxDecoration(
+                  color: allComplete
+                      ? AppColors.success
+                      : AppColors.warning,
+                  shape: BoxShape.circle,
+                ),
+              ),
+            );
+          },
         );
       },
-      loading: () => const SizedBox(),
-      error: (_, __) => const SizedBox(),
+      loading: () => const SizedBox.shrink(),
+      error: (_, __) => const SizedBox.shrink(),
     );
   }
 }
