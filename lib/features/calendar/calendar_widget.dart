@@ -24,88 +24,91 @@ class CalendarWidget extends ConsumerWidget {
     final headerColor = colorScheme.onSurface;
     final chevronColor = colorScheme.primary;
 
-    return TableCalendar(
-      firstDay: DateTime.utc(2020, 1, 1),
-      lastDay: DateTime.utc(2030, 12, 31),
-      focusedDay: focusedMonth,
-      selectedDayPredicate: (day) => isSameDay(selectedDate, day),
-      startingDayOfWeek: weekStartDay == 0
-          ? StartingDayOfWeek.sunday
-          : StartingDayOfWeek.monday,
-      calendarFormat: CalendarFormat.month,
-      headerStyle: HeaderStyle(
-        formatButtonVisible: false,
-        titleCentered: true,
-        titleTextStyle: TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.w600,
-          color: headerColor,
+    return SingleChildScrollView(
+      child: TableCalendar(
+        firstDay: DateTime.utc(2020, 1, 1),
+        lastDay: DateTime.utc(2030, 12, 31),
+        focusedDay: focusedMonth,
+        selectedDayPredicate: (day) => isSameDay(selectedDate, day),
+        startingDayOfWeek: weekStartDay == 0
+            ? StartingDayOfWeek.sunday
+            : StartingDayOfWeek.monday,
+        calendarFormat: CalendarFormat.month,
+        headerStyle: HeaderStyle(
+          formatButtonVisible: false,
+          titleCentered: true,
+          titleTextStyle: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: headerColor,
+          ),
+          leftChevronIcon: Icon(
+            Icons.chevron_left,
+            color: chevronColor,
+          ),
+          rightChevronIcon: Icon(
+            Icons.chevron_right,
+            color: chevronColor,
+          ),
         ),
-        leftChevronIcon: Icon(
-          Icons.chevron_left,
-          color: chevronColor,
+        daysOfWeekStyle: DaysOfWeekStyle(
+          weekdayStyle: TextStyle(
+            color: textColor,
+            fontWeight: FontWeight.w500,
+          ),
+          weekendStyle: TextStyle(
+            color: weekendColor,
+            fontWeight: FontWeight.w500,
+          ),
         ),
-        rightChevronIcon: Icon(
-          Icons.chevron_right,
-          color: chevronColor,
+        calendarStyle: CalendarStyle(
+          todayDecoration: BoxDecoration(
+            color: AppColors.primary.withValues(alpha: 0.3),
+            shape: BoxShape.circle,
+          ),
+          todayTextStyle: TextStyle(
+            color: textColor,
+            fontWeight: FontWeight.w600,
+          ),
+          selectedDecoration: BoxDecoration(
+            color: AppColors.primary,
+            shape: BoxShape.circle,
+          ),
+          selectedTextStyle: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w600,
+          ),
+          defaultTextStyle: TextStyle(
+            color: textColor,
+          ),
+          weekendTextStyle: TextStyle(
+            color: weekendColor,
+            fontWeight: FontWeight.w500,
+          ),
+          outsideDaysVisible: false,
+          markersMaxCount: 1,
+          markerDecoration: BoxDecoration(
+            color: AppColors.success,
+            shape: BoxShape.circle,
+          ),
+          cellMargin: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
         ),
-      ),
-      daysOfWeekStyle: DaysOfWeekStyle(
-        weekdayStyle: TextStyle(
-          color: textColor,
-          fontWeight: FontWeight.w500,
-        ),
-        weekendStyle: TextStyle(
-          color: weekendColor,
-          fontWeight: FontWeight.w500,
-        ),
-      ),
-      calendarStyle: CalendarStyle(
-        todayDecoration: BoxDecoration(
-          color: AppColors.primary.withValues(alpha: 0.3),
-          shape: BoxShape.circle,
-        ),
-        todayTextStyle: TextStyle(
-          color: textColor,
-          fontWeight: FontWeight.w600,
-        ),
-        selectedDecoration: BoxDecoration(
-          color: AppColors.primary,
-          shape: BoxShape.circle,
-        ),
-        selectedTextStyle: const TextStyle(
-          color: Colors.white,
-          fontWeight: FontWeight.w600,
-        ),
-        defaultTextStyle: TextStyle(
-          color: textColor,
-        ),
-        weekendTextStyle: TextStyle(
-          color: weekendColor,
-          fontWeight: FontWeight.w500,
-        ),
-        outsideDaysVisible: false,
-        markersMaxCount: 1,
-        markerDecoration: BoxDecoration(
-          color: AppColors.success,
-          shape: BoxShape.circle,
-        ),
-      ),
-      onDaySelected: (selectedDay, focusedDay) {
-        ref.read(selectedDateProvider.notifier).state = selectedDay;
-        ref.read(focusedMonthProvider.notifier).state = DateTime(
-          focusedDay.year,
-          focusedDay.month,
-          1,
-        );
-      },
-      onPageChanged: (focusedDay) {
-        ref.read(focusedMonthProvider.notifier).state = DateTime(focusedDay.year, focusedDay.month, 1);
-      },
-      calendarBuilders: CalendarBuilders(
-        markerBuilder: (context, date, events) {
-          return _DateIndicator(date: date);
+        onDaySelected: (selectedDay, focusedDay) {
+          ref.read(selectedDateProvider.notifier).state = selectedDay;
+          ref.read(focusedMonthProvider.notifier).state = DateTime(
+            focusedDay.year,
+            focusedDay.month,
+            1,
+          );
         },
+        onPageChanged: (focusedDay) {
+          ref.read(focusedMonthProvider.notifier).state = DateTime(focusedDay.year, focusedDay.month, 1);
+        },
+        calendarBuilders: CalendarBuilders(
+          markerBuilder: (context, date, events) {
+            return _DateIndicator(date: date);
+          },
+        ),
       ),
     );
   }
