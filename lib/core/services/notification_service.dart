@@ -5,8 +5,7 @@ class NotificationService {
   static void showSuccess(BuildContext context, String message) {
     AppBanner.of(context).show(
       context,
-      message,
-      config: BannerConfig(
+      BannerConfig(
         message: message,
         type: BannerType.success,
         duration: const Duration(seconds: 3),
@@ -18,8 +17,7 @@ class NotificationService {
   static void showInfo(BuildContext context, String message) {
     AppBanner.of(context).show(
       context,
-      message,
-      config: BannerConfig(
+      BannerConfig(
         message: message,
         type: BannerType.info,
       ),
@@ -29,8 +27,7 @@ class NotificationService {
   static void showWarning(BuildContext context, String message) {
     AppBanner.of(context).show(
       context,
-      message,
-      config: BannerConfig(
+      BannerConfig(
         message: message,
         type: BannerType.warning,
       ),
@@ -40,8 +37,7 @@ class NotificationService {
   static void showError(BuildContext context, String message) {
     AppBanner.of(context).show(
       context,
-      message,
-      config: BannerConfig(
+      BannerConfig(
         message: message,
         type: BannerType.error,
         duration: const Duration(seconds: 4),
@@ -56,8 +52,7 @@ class NotificationService {
   ) {
     AppBanner.of(context).show(
       context,
-      message,
-      config: BannerConfig(
+      BannerConfig(
         message: message,
         type: BannerType.info,
         duration: const Duration(seconds: 5),
@@ -80,8 +75,7 @@ class NotificationService {
   }) {
     AppBanner.of(context).show(
       context,
-      message,
-      config: BannerConfig(
+      BannerConfig(
         message: message,
         type: type,
         duration: duration,

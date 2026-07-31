@@ -148,8 +148,8 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: master
-      resolved-ref: "53e25265045839e48604c3ebc1bba196c38395f5"
+      ref: "v1.0.1"
+      resolved-ref: "9bfccea5aea1766fcc064ead06c98f4411522eda"
       url: "https://github.com/tridianthor/interactive_toast.git"
     source: git
     version: "0.0.1"

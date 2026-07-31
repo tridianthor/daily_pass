@@ -37,7 +37,7 @@ dependencies:
   interactive_toast:
     git:
       url: https://github.com/tridianthor/interactive_toast.git
-      ref: master
+      ref: v1.0.1
   loading_button:
     git:
       url: https://github.com/tridianthor/loading_button.git
