@@ -43,6 +43,7 @@ class ActivityService {
     required String name,
     String? detail,
     RepeatType repeatType = RepeatType.none,
+    int? dayOfWeek,
   }) async {
     final now = DateTime.now();
     
@@ -57,6 +58,11 @@ class ActivityService {
       config = RepeatConfig(
         startDate: now,
         endDate: DateTime(now.year, now.month + 1, now.day),
+      );
+    } else if (repeatType == RepeatType.weekly) {
+      // Store the selected day of week (0=Sun, 1=Mon, ..., 6=Sat)
+      config = RepeatConfig(
+        dayOfWeek: dayOfWeek ?? 0,
       );
     }
     

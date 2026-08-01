@@ -12,7 +12,7 @@ class RepeatUtils {
   /// 
   /// Returns true if the activity should appear on the given date
   static bool shouldAppearOnDate({
-    required int repeatType, // 0=none, 1=daily, 2=weekdays, 3=weekly, 4=monthlyDate, 5=monthlyWeekday
+    required int repeatType, // 0=none, 1=daily, 2=weekly, 3=monthlyDate, 4=forAWeek, 5=forAMonth
     DateTime? startDate,
     DateTime? endDate,
     int? dayOfWeek,
@@ -31,17 +31,13 @@ class RepeatUtils {
     switch (repeatType) {
       case 1: // daily
         return true;
-      case 2: // weekdays (Mon-Fri)
-        return date.weekday >= 1 && date.weekday <= 5;
-      case 3: // weekly
+      case 2: // weekly
         return date.weekday == (dayOfWeek ?? effectiveStartDate.weekday);
-      case 4: // monthly by date
+      case 3: // monthly by date
         return date.day == effectiveStartDate.day;
-      case 5: // monthly by weekday position
-        return _isSameWeekdayInPosition(date, effectiveStartDate, weekPosition);
-      case 6: // for a week (daily until endDate)
+      case 4: // for a week (daily until endDate)
         return true;
-      case 7: // for a month (daily until endDate)
+      case 5: // for a month (daily until endDate)
         return true;
       default:
         return false;
@@ -53,12 +49,4 @@ class RepeatUtils {
     return a.year == b.year && a.month == b.month && a.day == b.day;
   }
 
-  static bool _isSameWeekdayInPosition(DateTime date, DateTime reference, int? position) {
-    if (date.weekday != reference.weekday) return false;
-    if (position == null) {
-      return date.day == reference.day;
-    }
-    final weekOfMonth = ((date.day - 1) ~/ 7) + 1;
-    return weekOfMonth == position;
-  }
 }

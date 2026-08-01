@@ -79,9 +79,6 @@ class ActivitiesDao {
       case RepeatType.forAWeek:
       case RepeatType.forAMonth:
         return true;
-      case RepeatType.weekdays:
-        final weekday = targetDate.weekday;
-        return weekday >= 1 && weekday <= 5;
       case RepeatType.weekly:
         if (activity.repeatConfig?.dayOfWeek != null) {
           final targetWeekday = targetDate.weekday % 7;
@@ -89,15 +86,6 @@ class ActivitiesDao {
         }
         return targetDate.weekday == activityStartDate.weekday;
       case RepeatType.monthlyDate:
-        return targetDate.day == activityStartDate.day;
-      case RepeatType.monthlyWeekday:
-        final dayOfWeek = activity.repeatConfig?.dayOfWeek;
-        final weekPosition = activity.repeatConfig?.weekPosition;
-        if (dayOfWeek != null && targetDate.weekday % 7 != dayOfWeek) return false;
-        if (weekPosition != null) {
-          final weekOfMonth = ((targetDate.day - 1) ~/ 7) + 1;
-          return weekOfMonth == weekPosition;
-        }
         return targetDate.day == activityStartDate.day;
     }
   }

@@ -1,10 +1,8 @@
 enum RepeatType {
   none,
   daily,
-  weekdays,
   weekly,
   monthlyDate,
-  monthlyWeekday,
   forAWeek,
   forAMonth,
 }
@@ -16,14 +14,10 @@ extension RepeatTypeExtension on RepeatType {
         return 'No repeat';
       case RepeatType.daily:
         return 'Daily';
-      case RepeatType.weekdays:
-        return 'Weekdays';
       case RepeatType.weekly:
         return 'Weekly';
       case RepeatType.monthlyDate:
         return 'Monthly';
-      case RepeatType.monthlyWeekday:
-        return 'Monthly (weekday)';
       case RepeatType.forAWeek:
         return 'For a week';
       case RepeatType.forAMonth:

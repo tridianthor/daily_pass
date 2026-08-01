@@ -61,12 +61,6 @@ bool _isActivityOnDate(Activity activity, DateTime date) {
       case RepeatType.forAMonth:
         if (daysDiff >= occurrences) return false;
         break;
-      case RepeatType.weekdays:
-        if (targetDate.weekday > 5) return false;
-        final weeks = daysDiff ~/ 7;
-        final weekdayCount = daysDiff - (weeks * 2);
-        if (weekdayCount >= occurrences) return false;
-        break;
       case RepeatType.weekly:
         final weeks = daysDiff ~/ 7;
         if (weeks >= occurrences) return false;
@@ -75,18 +69,6 @@ bool _isActivityOnDate(Activity activity, DateTime date) {
         break;
       case RepeatType.monthlyDate:
         if (targetDate.day != activityStartDate.day) return false;
-        final months = (targetDate.year - activityStartDate.year) * 12 + 
-            (targetDate.month - activityStartDate.month);
-        if (months >= occurrences) return false;
-        break;
-      case RepeatType.monthlyWeekday:
-        final dayOfWeek = activity.repeatConfig?.dayOfWeek;
-        final weekPosition = activity.repeatConfig?.weekPosition;
-        if (dayOfWeek != null && targetDate.weekday % 7 != dayOfWeek) return false;
-        if (weekPosition != null) {
-          final targetWeek = ((targetDate.day - 1) ~/ 7) + 1;
-          if (targetWeek != weekPosition) return false;
-        }
         final months = (targetDate.year - activityStartDate.year) * 12 + 
             (targetDate.month - activityStartDate.month);
         if (months >= occurrences) return false;
@@ -103,24 +85,12 @@ bool _isActivityOnDate(Activity activity, DateTime date) {
       case RepeatType.forAMonth:
         // Continues indefinitely (for week/month will be limited by endDate in _isActivityOnDate)
         break;
-      case RepeatType.weekdays:
-        if (targetDate.weekday > 5) return false;
-        break;
       case RepeatType.weekly:
         final dayOfWeek = activity.repeatConfig?.dayOfWeek;
         if (dayOfWeek != null && targetDate.weekday % 7 != dayOfWeek) return false;
         break;
       case RepeatType.monthlyDate:
         if (targetDate.day != activityStartDate.day) return false;
-        break;
-      case RepeatType.monthlyWeekday:
-        final dayOfWeek = activity.repeatConfig?.dayOfWeek;
-        final weekPosition = activity.repeatConfig?.weekPosition;
-        if (dayOfWeek != null && targetDate.weekday % 7 != dayOfWeek) return false;
-        if (weekPosition != null) {
-          final targetWeek = ((targetDate.day - 1) ~/ 7) + 1;
-          if (targetWeek != weekPosition) return false;
-        }
         break;
     }
   }

@@ -5,7 +5,7 @@ Cross-platform daily activity tracking app for building and maintaining positive
 ## Features
 
 - **Calendar-based tracking** - Visual progress indicators showing completion status per day
-- **Flexible scheduling** - One-time or recurring activities (daily, weekdays, weekly, monthly)
+- **Flexible scheduling** - One-time or recurring activities (daily, weekly, monthly)
 - **Offline-first** - All data stored locally, works without internet
 - **Cross-platform** - iOS, Android, Windows, and Linux support
 - **Dark mode** - Comfortable viewing in any lighting
