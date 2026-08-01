@@ -22,16 +22,14 @@ class _CreateActivityScreenState extends ConsumerState<CreateActivityScreen> {
   final _nameController = TextEditingController();
   final _detailController = TextEditingController();
 
-  late int _dayOfWeek;
+  late DateTime _selectedDate;
 
   @override
   void initState() {
     super.initState();
-    // Default to the currently selected date's weekday
     // Normalize to midnight before using as provider key (per project rules)
     final selectedDate = ref.read(selectedDateProvider);
-    final normalizedDate = DateTime(selectedDate.year, selectedDate.month, selectedDate.day);
-    _dayOfWeek = normalizedDate.weekday % 7;
+    _selectedDate = DateTime(selectedDate.year, selectedDate.month, selectedDate.day);
   }
 
   RepeatType _repeatType = RepeatType.none;
@@ -85,8 +83,6 @@ class _CreateActivityScreenState extends ConsumerState<CreateActivityScreen> {
             RepeatSelector(
               value: _repeatType,
               onChanged: (type) => setState(() => _repeatType = type),
-              dayOfWeek: _dayOfWeek,
-              onDayOfWeekChanged: (day) => setState(() => _dayOfWeek = day ?? 0),
             ),
             const SizedBox(height: AppSpacing.xl),
 
@@ -121,9 +117,9 @@ class _CreateActivityScreenState extends ConsumerState<CreateActivityScreen> {
       name: _nameController.text.trim(),
       detail: _detailController.text.trim().isEmpty ? null : _detailController.text.trim(),
       repeatType: _repeatType,
-      dayOfWeek: _repeatType == RepeatType.weekly ? _dayOfWeek : null,
+      dayOfWeek: _repeatType == RepeatType.weekly ? _selectedDate.weekday % 7 : null,
+      createdAt: _selectedDate,
     );
-
     ref.invalidate(activitiesProvider);
     ref.invalidate(allActivitiesProvider);
 

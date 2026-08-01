@@ -44,8 +44,10 @@ class ActivityService {
     String? detail,
     RepeatType repeatType = RepeatType.none,
     int? dayOfWeek,
+    DateTime? createdAt,
   }) async {
     final now = DateTime.now();
+    final activityDate = createdAt ?? now;
     
     // Calculate config for specific repeat types
     RepeatConfig? config;
@@ -62,10 +64,9 @@ class ActivityService {
       detail: detail,
       repeatType: repeatType,
       repeatConfig: config,
-      createdAt: now,
+      createdAt: activityDate,
       updatedAt: now,
     );
-    
     await _activitiesDao.insert(activity);
     return activity;
   }
@@ -83,13 +84,10 @@ class ActivityService {
       throw Exception('Activity not found: $id');
     }
 
-    RepeatConfig? config;
-
     final updated = existing.copyWith(
       name: name,
       detail: detail,
       repeatType: repeatType,
-      repeatConfig: config,
       updatedAt: DateTime.now(),
       clearDetail: clearDetail,
     );
