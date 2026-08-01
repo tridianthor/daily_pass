@@ -26,9 +26,12 @@ class ActivityItem extends ConsumerStatefulWidget {
 
 class _ActivityItemState extends ConsumerState<ActivityItem> {
   bool _isExpanded = false;
+  bool _isDismissed = false;
 
   @override
   Widget build(BuildContext context) {
+    if (_isDismissed) return const SizedBox.shrink();
+
     // Normalize date to midnight for consistent provider keys
     final normalizedDate = DateTime(
       widget.date.year,
@@ -94,6 +97,7 @@ class _ActivityItemState extends ConsumerState<ActivityItem> {
       onDismissed: (direction) {
         if (direction == DismissDirection.endToStart) {
           _deleteActivity();
+          setState(() => _isDismissed = true);
         }
       },
       child: Card(
@@ -244,6 +248,7 @@ class _ActivityItemState extends ConsumerState<ActivityItem> {
   void _deleteActivity() {
     ref.read(activityServiceProvider).deleteActivity(widget.activity.id);
     ref.invalidate(allActivitiesProvider);
+    ref.invalidate(activitiesProvider);
     NotificationService.showSuccess(context, 'Activity deleted');
   }
 

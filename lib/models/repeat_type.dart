@@ -3,8 +3,6 @@ enum RepeatType {
   daily,
   weekly,
   monthlyDate,
-  forAWeek,
-  forAMonth,
 }
 
 extension RepeatTypeExtension on RepeatType {
@@ -18,10 +16,6 @@ extension RepeatTypeExtension on RepeatType {
         return 'Weekly';
       case RepeatType.monthlyDate:
         return 'Monthly';
-      case RepeatType.forAWeek:
-        return 'For a week';
-      case RepeatType.forAMonth:
-        return 'For a month';
     }
   }
 }

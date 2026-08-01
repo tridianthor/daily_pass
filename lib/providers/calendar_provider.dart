@@ -57,8 +57,6 @@ bool _isActivityOnDate(Activity activity, DateTime date) {
         if (daysDiff != 0) return false;
         break;
       case RepeatType.daily:
-      case RepeatType.forAWeek:
-      case RepeatType.forAMonth:
         if (daysDiff >= occurrences) return false;
         break;
       case RepeatType.weekly:
@@ -81,9 +79,7 @@ bool _isActivityOnDate(Activity activity, DateTime date) {
         if (targetDate != activityStartDate) return false;
         break;
       case RepeatType.daily:
-      case RepeatType.forAWeek:
-      case RepeatType.forAMonth:
-        // Continues indefinitely (for week/month will be limited by endDate in _isActivityOnDate)
+        // Continues indefinitely
         break;
       case RepeatType.weekly:
         final dayOfWeek = activity.repeatConfig?.dayOfWeek;

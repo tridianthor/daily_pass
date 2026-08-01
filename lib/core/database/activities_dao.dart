@@ -76,8 +76,6 @@ class ActivitiesDao {
       case RepeatType.none:
         return targetDate.isAtSameMomentAs(activityStartDate);
       case RepeatType.daily:
-      case RepeatType.forAWeek:
-      case RepeatType.forAMonth:
         return true;
       case RepeatType.weekly:
         if (activity.repeatConfig?.dayOfWeek != null) {

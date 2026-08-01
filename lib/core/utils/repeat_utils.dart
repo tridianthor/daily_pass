@@ -12,7 +12,7 @@ class RepeatUtils {
   /// 
   /// Returns true if the activity should appear on the given date
   static bool shouldAppearOnDate({
-    required int repeatType, // 0=none, 1=daily, 2=weekly, 3=monthlyDate, 4=forAWeek, 5=forAMonth
+    required int repeatType, // 0=none, 1=daily, 2=weekly, 3=monthlyDate
     DateTime? startDate,
     DateTime? endDate,
     int? dayOfWeek,
@@ -35,10 +35,6 @@ class RepeatUtils {
         return date.weekday == (dayOfWeek ?? effectiveStartDate.weekday);
       case 3: // monthly by date
         return date.day == effectiveStartDate.day;
-      case 4: // for a week (daily until endDate)
-        return true;
-      case 5: // for a month (daily until endDate)
-        return true;
       default:
         return false;
     }

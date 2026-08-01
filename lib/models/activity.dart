@@ -32,18 +32,33 @@ class Activity {
         'updated_at': updatedAt.toIso8601String(),
       };
 
-  factory Activity.fromMap(Map<String, dynamic> map) => Activity(
-        id: map['id'] as String,
-        name: map['name'] as String,
-        detail: map['detail'] as String?,
-        repeatType: RepeatType.values[map['repeat_type'] as int],
-        repeatConfig: map['repeat_config'] != null
-            ? RepeatConfig.fromJson(
-                jsonDecode(map['repeat_config'] as String) as Map<String, dynamic>)
-            : null,
-        createdAt: DateTime.parse(map['created_at'] as String),
-        updatedAt: DateTime.parse(map['updated_at'] as String),
-      );
+  factory Activity.fromMap(Map<String, dynamic> map) {
+    // Handle old repeat_type values that no longer exist in the enum
+    int repeatTypeIndex = map['repeat_type'] as int;
+    // Old mapping: 0=none, 1=daily, 2=weekdays, 3=weekly, 4=monthlyDate, 5=monthlyWeekday, 6=forAWeek, 7=forAMonth
+    // New mapping: 0=none, 1=daily, 2=weekly, 3=monthlyDate
+    // Map old indices to new ones (or to none as fallback)
+    RepeatType repeatType;
+    if (repeatTypeIndex >= RepeatType.values.length) {
+      // Fallback for indices that don't exist
+      repeatType = RepeatType.none;
+    } else {
+      repeatType = RepeatType.values[repeatTypeIndex];
+    }
+
+    return Activity(
+      id: map['id'] as String,
+      name: map['name'] as String,
+      detail: map['detail'] as String?,
+      repeatType: repeatType,
+      repeatConfig: map['repeat_config'] != null
+          ? RepeatConfig.fromJson(
+              jsonDecode(map['repeat_config'] as String) as Map<String, dynamic>)
+          : null,
+      createdAt: DateTime.parse(map['created_at'] as String),
+      updatedAt: DateTime.parse(map['updated_at'] as String),
+    );
+  }
 
   Activity copyWith({
     String? id,

@@ -47,19 +47,9 @@ class ActivityService {
   }) async {
     final now = DateTime.now();
     
-    // Calculate end date for limited repeats
+    // Calculate config for specific repeat types
     RepeatConfig? config;
-    if (repeatType == RepeatType.forAWeek) {
-      config = RepeatConfig(
-        startDate: now,
-        endDate: now.add(const Duration(days: 7)),
-      );
-    } else if (repeatType == RepeatType.forAMonth) {
-      config = RepeatConfig(
-        startDate: now,
-        endDate: DateTime(now.year, now.month + 1, now.day),
-      );
-    } else if (repeatType == RepeatType.weekly) {
+    if (repeatType == RepeatType.weekly) {
       // Store the selected day of week (0=Sun, 1=Mon, ..., 6=Sat)
       config = RepeatConfig(
         dayOfWeek: dayOfWeek ?? 0,
@@ -93,20 +83,7 @@ class ActivityService {
       throw Exception('Activity not found: $id');
     }
 
-    // Calculate end date for limited repeats
     RepeatConfig? config;
-    if (repeatType == RepeatType.forAWeek) {
-      config = RepeatConfig(
-        startDate: DateTime.now(),
-        endDate: DateTime.now().add(const Duration(days: 7)),
-      );
-    } else if (repeatType == RepeatType.forAMonth) {
-      final now = DateTime.now();
-      config = RepeatConfig(
-        startDate: now,
-        endDate: DateTime(now.year, now.month + 1, now.day),
-      );
-    }
 
     final updated = existing.copyWith(
       name: name,
