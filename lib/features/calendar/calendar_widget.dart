@@ -33,6 +33,12 @@ class CalendarWidget extends ConsumerWidget {
             ? StartingDayOfWeek.sunday
             : StartingDayOfWeek.monday,
         calendarFormat: CalendarFormat.month,
+        enabledDayPredicate: (day) {
+          final now = DateTime.now();
+          final today = DateTime(now.year, now.month, now.day);
+          final target = DateTime(day.year, day.month, day.day);
+          return !target.isBefore(today);
+        },
         headerStyle: HeaderStyle(
           formatButtonVisible: false,
           titleCentered: true,
@@ -89,6 +95,16 @@ class CalendarWidget extends ConsumerWidget {
           cellMargin: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
         ),
         onDaySelected: (selectedDay, focusedDay) {
+          final now = DateTime.now();
+          final today = DateTime(now.year, now.month, now.day);
+          final normalizedSelected = DateTime(
+            selectedDay.year,
+            selectedDay.month,
+            selectedDay.day,
+          );
+          if (normalizedSelected.isBefore(today)) {
+            return;
+          }
           ref.read(selectedDateProvider.notifier).state = selectedDay;
           ref.read(focusedMonthProvider.notifier).state = DateTime(
             focusedDay.year,
@@ -103,6 +119,7 @@ class CalendarWidget extends ConsumerWidget {
           defaultBuilder: (context, day, focusedDay) => _DateCell(day: day),
           todayBuilder: (context, day, focusedDay) => _DateCell(day: day, isToday: true),
           selectedBuilder: (context, day, focusedDay) => _DateCell(day: day, isSelected: true),
+          disabledBuilder: (context, day, focusedDay) => _DateCell(day: day, isDisabled: true),
         ),
       ),
     );
@@ -114,11 +131,13 @@ class _DateCell extends ConsumerWidget {
   final DateTime day;
   final bool isToday;
   final bool isSelected;
+  final bool isDisabled;
 
   const _DateCell({
     required this.day,
     this.isToday = false,
     this.isSelected = false,
+    this.isDisabled = false,
   });
 
   @override
@@ -139,10 +158,17 @@ class _DateCell extends ConsumerWidget {
     final isWeekend = day.weekday == 6 || day.weekday == 7;
     
     Color? backgroundColor;
-    Color textCol = isWeekend ? weekendColor : textColor;
+    Color textCol;
     FontWeight fontWeight = FontWeight.normal;
 
-    if (isSelected) {
+    if (isDisabled) {
+      textCol = colorScheme.onSurface.withValues(alpha: 0.35);
+      if (status == DateIndicatorStatus.missed) {
+        backgroundColor = AppColors.pastelRed.withValues(alpha: 0.5);
+      } else if (status == DateIndicatorStatus.complete) {
+        backgroundColor = AppColors.pastelGreen.withValues(alpha: 0.5);
+      }
+    } else if (isSelected) {
       backgroundColor = AppColors.primary;
       textCol = Colors.white;
       fontWeight = FontWeight.w600;
@@ -151,6 +177,7 @@ class _DateCell extends ConsumerWidget {
       textCol = textColor;
       fontWeight = FontWeight.w600;
     } else {
+      textCol = isWeekend ? weekendColor : textColor;
       // Apply pastel background based on status
       switch (status) {
         case DateIndicatorStatus.complete:

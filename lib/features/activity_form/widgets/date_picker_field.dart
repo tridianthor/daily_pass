@@ -22,6 +22,9 @@ class DatePickerField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final dateFormat = DateFormat.yMMMd();
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final effectiveFirstDate = firstDate ?? today;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -36,11 +39,18 @@ class DatePickerField extends StatelessWidget {
             Expanded(
               child: InkWell(
                 onTap: () async {
+                  final initial = value != null && !value!.isBefore(effectiveFirstDate)
+                      ? value!
+                      : effectiveFirstDate;
                   final picked = await showDatePicker(
                     context: context,
-                    initialDate: value ?? DateTime.now(),
-                    firstDate: firstDate ?? DateTime(2020),
+                    initialDate: initial,
+                    firstDate: effectiveFirstDate,
                     lastDate: lastDate ?? DateTime(2100),
+                    selectableDayPredicate: (day) {
+                      final normalizedDay = DateTime(day.year, day.month, day.day);
+                      return !normalizedDay.isBefore(effectiveFirstDate);
+                    },
                   );
                   if (picked != null) onChanged(picked);
                 },
@@ -75,7 +85,7 @@ class DatePickerField extends StatelessWidget {
             if (allowClear && value != null)
               IconButton(
                 icon: const Icon(Icons.clear),
-                onPressed: () => onChanged(DateTime.now()),
+                onPressed: () => onChanged(today),
               ),
           ],
         ),

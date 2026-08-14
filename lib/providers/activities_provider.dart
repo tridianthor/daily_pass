@@ -4,7 +4,10 @@ import '../core/database/activities_dao.dart';
 import 'database_provider.dart';
 
 /// Currently selected date for viewing activities.
-final selectedDateProvider = StateProvider<DateTime>((ref) => DateTime.now());
+final selectedDateProvider = StateProvider<DateTime>((ref) {
+  final now = DateTime.now();
+  return DateTime(now.year, now.month, now.day);
+});
 
 /// Activities that should appear on the selected date.
 /// Automatically refreshes when selectedDate changes.
