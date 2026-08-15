@@ -10,18 +10,16 @@ class HomeMobileLayout extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Column(
       children: [
-        // Top half: Calendar
-        Expanded(
-          child: Container(
-            decoration: BoxDecoration(
-              color: Theme.of(context).cardColor,
-              borderRadius: const BorderRadius.only(
-                bottomLeft: Radius.circular(16),
-                bottomRight: Radius.circular(16),
-              ),
+        // Top: Calendar (natural height, unclipped)
+        Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).cardColor,
+            borderRadius: const BorderRadius.only(
+              bottomLeft: Radius.circular(16),
+              bottomRight: Radius.circular(16),
             ),
-            child: const CalendarWidget(),
           ),
+          child: const CalendarWidget(),
         ),
         // Bottom half: Activity list
         const Expanded(

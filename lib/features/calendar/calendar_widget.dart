@@ -23,39 +23,42 @@ class CalendarWidget extends ConsumerWidget {
     final headerColor = colorScheme.onSurface;
     final chevronColor = colorScheme.primary;
 
-    return SingleChildScrollView(
-      child: TableCalendar(
-        firstDay: DateTime.utc(2020, 1, 1),
-        lastDay: DateTime.utc(2030, 12, 31),
-        focusedDay: focusedMonth,
-        selectedDayPredicate: (day) => isSameDay(selectedDate, day),
-        startingDayOfWeek: weekStartDay == 0
-            ? StartingDayOfWeek.sunday
-            : StartingDayOfWeek.monday,
-        calendarFormat: CalendarFormat.month,
-        enabledDayPredicate: (day) {
-          final now = DateTime.now();
-          final today = DateTime(now.year, now.month, now.day);
-          final target = DateTime(day.year, day.month, day.day);
-          return !target.isBefore(today);
-        },
-        headerStyle: HeaderStyle(
-          formatButtonVisible: false,
-          titleCentered: true,
-          titleTextStyle: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-            color: headerColor,
-          ),
-          leftChevronIcon: Icon(
-            Icons.chevron_left,
-            color: chevronColor,
-          ),
-          rightChevronIcon: Icon(
-            Icons.chevron_right,
-            color: chevronColor,
-          ),
+    return TableCalendar(
+      firstDay: DateTime.utc(2020, 1, 1),
+      lastDay: DateTime.utc(2030, 12, 31),
+      focusedDay: focusedMonth,
+      selectedDayPredicate: (day) => isSameDay(selectedDate, day),
+      startingDayOfWeek: weekStartDay == 0
+          ? StartingDayOfWeek.sunday
+          : StartingDayOfWeek.monday,
+      calendarFormat: CalendarFormat.month,
+      sixWeekMonthsEnforced: false,
+      rowHeight: 42.0,
+      daysOfWeekHeight: 22.0,
+      enabledDayPredicate: (day) {
+        final now = DateTime.now();
+        final today = DateTime(now.year, now.month, now.day);
+        final target = DateTime(day.year, day.month, day.day);
+        return !target.isBefore(today);
+      },
+      headerStyle: HeaderStyle(
+        formatButtonVisible: false,
+        titleCentered: true,
+        headerPadding: const EdgeInsets.symmetric(vertical: 4.0),
+        titleTextStyle: TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.w600,
+          color: headerColor,
         ),
+        leftChevronIcon: Icon(
+          Icons.chevron_left,
+          color: chevronColor,
+        ),
+        rightChevronIcon: Icon(
+          Icons.chevron_right,
+          color: chevronColor,
+        ),
+      ),
         daysOfWeekStyle: DaysOfWeekStyle(
           weekdayStyle: TextStyle(
             color: textColor,
@@ -121,8 +124,7 @@ class CalendarWidget extends ConsumerWidget {
           selectedBuilder: (context, day, focusedDay) => _DateCell(day: day, isSelected: true),
           disabledBuilder: (context, day, focusedDay) => _DateCell(day: day, isDisabled: true),
         ),
-      ),
-    );
+      );
   }
 }
 
