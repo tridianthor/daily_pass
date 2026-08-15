@@ -4,12 +4,26 @@ import '../../core/constants/app_strings.dart';
 import 'home_mobile.dart';
 import 'home_desktop.dart';
 import 'package:go_router/go_router.dart';
+import '../../core/services/app_notification_service.dart';
 
-class HomeScreen extends ConsumerWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends ConsumerState<HomeScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      AppNotificationService().requestPermissions();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(

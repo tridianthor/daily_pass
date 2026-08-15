@@ -8,14 +8,22 @@ import '../database/database_helper.dart';
 import '../database/activities_dao.dart';
 import '../database/completions_dao.dart';
 import '../database/settings_dao.dart';
+import 'app_notification_service.dart';
 
 class ImportService {
   final DatabaseHelper _dbHelper;
   final ActivitiesDao _activitiesDao;
   final CompletionsDao _completionsDao;
   final SettingsDao _settingsDao;
+  final AppNotificationService _notificationService;
 
-  ImportService(this._dbHelper, this._activitiesDao, this._completionsDao, this._settingsDao);
+  ImportService(
+    this._dbHelper,
+    this._activitiesDao,
+    this._completionsDao,
+    this._settingsDao, [
+    AppNotificationService? notificationService,
+  ]) : _notificationService = notificationService ?? AppNotificationService();
 
   static const String _currentVersion = '1.0';
 
@@ -46,6 +54,7 @@ class ImportService {
       final settingsData = data['settings'] as Map<String, dynamic>?;
 
       // Clear existing data before import
+      await _notificationService.cancelAllNotifications();
       await _dbHelper.clearAllData();
 
       // Import activities
@@ -54,6 +63,9 @@ class ImportService {
         try {
           final activity = Activity.fromMap(activityMap as Map<String, dynamic>);
           await _activitiesDao.insert(activity);
+          if (activity.useNotification) {
+            await _notificationService.scheduleActivityNotification(activity);
+          }
           activityCount++;
         } catch (e) {
           // Skip invalid activity entries

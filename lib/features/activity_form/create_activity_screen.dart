@@ -9,6 +9,7 @@ import '../../core/constants/app_spacing.dart';
 import '../../core/services/notification_service.dart';
 import '../activity_list/activity_service_provider.dart';
 import 'widgets/repeat_selector.dart';
+import 'widgets/notification_selector.dart';
 
 class CreateActivityScreen extends ConsumerStatefulWidget {
   const CreateActivityScreen({super.key});
@@ -23,6 +24,11 @@ class _CreateActivityScreenState extends ConsumerState<CreateActivityScreen> {
   final _detailController = TextEditingController();
 
   late DateTime _selectedDate;
+  RepeatType _repeatType = RepeatType.none;
+
+  bool _useNotification = false;
+  String _notificationTime = '06:00';
+  bool _isNotificationPersistent = false;
 
   @override
   void initState() {
@@ -32,7 +38,6 @@ class _CreateActivityScreenState extends ConsumerState<CreateActivityScreen> {
     _selectedDate = DateTime(selectedDate.year, selectedDate.month, selectedDate.day);
   }
 
-  RepeatType _repeatType = RepeatType.none;
   @override
   void dispose() {
     _nameController.dispose();
@@ -84,6 +89,17 @@ class _CreateActivityScreenState extends ConsumerState<CreateActivityScreen> {
               value: _repeatType,
               onChanged: (type) => setState(() => _repeatType = type),
             ),
+            const SizedBox(height: AppSpacing.lg),
+
+            NotificationSelector(
+              useNotification: _useNotification,
+              notificationTime: _notificationTime,
+              isPersistent: _isNotificationPersistent,
+              onNotificationToggled: (val) => setState(() => _useNotification = val),
+              onTimeChanged: (val) => setState(() => _notificationTime = val),
+              onPersistentChanged: (val) =>
+                  setState(() => _isNotificationPersistent = val),
+            ),
             const SizedBox(height: AppSpacing.xl),
 
             Row(
@@ -118,6 +134,9 @@ class _CreateActivityScreenState extends ConsumerState<CreateActivityScreen> {
       detail: _detailController.text.trim().isEmpty ? null : _detailController.text.trim(),
       repeatType: _repeatType,
       dayOfWeek: _repeatType == RepeatType.weekly ? _selectedDate.weekday % 7 : null,
+      useNotification: _useNotification,
+      notificationTime: _useNotification ? _notificationTime : null,
+      isNotificationPersistent: _useNotification && _isNotificationPersistent,
       createdAt: _selectedDate,
     );
     ref.invalidate(activitiesProvider);

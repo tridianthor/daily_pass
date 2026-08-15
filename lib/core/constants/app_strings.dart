@@ -22,6 +22,15 @@ class AppStrings {
   static const String requiredField = 'This field is required';
   static String maxChars(int count) => 'Maximum $count characters';
 
+  // Notification Options
+  static const String notification = 'Notification';
+  static const String useNotification = 'Use notification';
+  static const String doNotUseNotification = 'Do not use notification';
+  static const String notificationTime = 'Notification time';
+  static const String persistentNotification = 'Persistent notification';
+  static const String persistentNotificationDesc = 'Make notification undismissable';
+  static const String selectTime = 'Select time';
+
   // Settings
   static const String settings = 'Settings';
   static const String appearance = 'Appearance';

@@ -9,6 +9,8 @@ import '../../core/constants/app_spacing.dart';
 import '../../core/services/notification_service.dart';
 import '../activity_list/activity_service_provider.dart';
 import 'widgets/repeat_selector.dart';
+import 'widgets/notification_selector.dart';
+
 class EditActivityScreen extends ConsumerStatefulWidget {
   final String activityId;
 
@@ -30,6 +32,9 @@ class _EditActivityScreenState extends ConsumerState<EditActivityScreen> {
   Activity? _activity;
 
   RepeatType _repeatType = RepeatType.none;
+  bool _useNotification = false;
+  String _notificationTime = '06:00';
+  bool _isNotificationPersistent = false;
 
   @override
   void initState() {
@@ -46,6 +51,9 @@ class _EditActivityScreenState extends ConsumerState<EditActivityScreen> {
         _nameController.text = activity.name;
         _detailController.text = activity.detail ?? '';
         _repeatType = activity.repeatType;
+        _useNotification = activity.useNotification;
+        _notificationTime = activity.notificationTime ?? '06:00';
+        _isNotificationPersistent = activity.isNotificationPersistent;
         _isLoading = false;
       });
     } else if (mounted) {
@@ -129,6 +137,18 @@ class _EditActivityScreenState extends ConsumerState<EditActivityScreen> {
               value: _repeatType,
               onChanged: (type) => setState(() => _repeatType = type),
             ),
+            const SizedBox(height: AppSpacing.lg),
+
+            // Notification Selector
+            NotificationSelector(
+              useNotification: _useNotification,
+              notificationTime: _notificationTime,
+              isPersistent: _isNotificationPersistent,
+              onNotificationToggled: (val) => setState(() => _useNotification = val),
+              onTimeChanged: (val) => setState(() => _notificationTime = val),
+              onPersistentChanged: (val) =>
+                  setState(() => _isNotificationPersistent = val),
+            ),
             const SizedBox(height: AppSpacing.xl),
             Row(
               children: [
@@ -163,6 +183,9 @@ class _EditActivityScreenState extends ConsumerState<EditActivityScreen> {
       name: _nameController.text.trim(),
       detail: _detailController.text.trim().isEmpty ? null : _detailController.text.trim(),
       repeatType: _repeatType,
+      useNotification: _useNotification,
+      notificationTime: _useNotification ? _notificationTime : null,
+      isNotificationPersistent: _useNotification && _isNotificationPersistent,
       clearDetail: _detailController.text.trim().isEmpty,
     );
 

@@ -8,6 +8,9 @@ class Activity {
   final String? detail;
   final RepeatType repeatType;
   final RepeatConfig? repeatConfig;
+  final bool useNotification;
+  final String? notificationTime;
+  final bool isNotificationPersistent;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -17,6 +20,9 @@ class Activity {
     this.detail,
     required this.repeatType,
     this.repeatConfig,
+    this.useNotification = false,
+    this.notificationTime,
+    this.isNotificationPersistent = false,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -28,6 +34,9 @@ class Activity {
         'repeat_type': repeatType.index,
         'repeat_config':
             repeatConfig != null ? jsonEncode(repeatConfig!.toJson()) : null,
+        'use_notification': useNotification ? 1 : 0,
+        'notification_time': notificationTime,
+        'is_notification_persistent': isNotificationPersistent ? 1 : 0,
         'created_at': createdAt.toIso8601String(),
         'updated_at': updatedAt.toIso8601String(),
       };
@@ -55,6 +64,10 @@ class Activity {
           ? RepeatConfig.fromJson(
               jsonDecode(map['repeat_config'] as String) as Map<String, dynamic>)
           : null,
+      useNotification: (map['use_notification'] as int?) == 1,
+      notificationTime: map['notification_time'] as String?,
+      isNotificationPersistent:
+          (map['is_notification_persistent'] as int?) == 1,
       createdAt: DateTime.parse(map['created_at'] as String),
       updatedAt: DateTime.parse(map['updated_at'] as String),
     );
@@ -66,10 +79,14 @@ class Activity {
     String? detail,
     RepeatType? repeatType,
     RepeatConfig? repeatConfig,
+    bool? useNotification,
+    String? notificationTime,
+    bool? isNotificationPersistent,
     DateTime? createdAt,
     DateTime? updatedAt,
     bool clearDetail = false,
     bool clearRepeatConfig = false,
+    bool clearNotificationTime = false,
   }) =>
       Activity(
         id: id ?? this.id,
@@ -78,6 +95,12 @@ class Activity {
         repeatType: repeatType ?? this.repeatType,
         repeatConfig:
             clearRepeatConfig ? null : (repeatConfig ?? this.repeatConfig),
+        useNotification: useNotification ?? this.useNotification,
+        notificationTime: clearNotificationTime
+            ? null
+            : (notificationTime ?? this.notificationTime),
+        isNotificationPersistent:
+            isNotificationPersistent ?? this.isNotificationPersistent,
         createdAt: createdAt ?? this.createdAt,
         updatedAt: updatedAt ?? this.updatedAt,
       );
@@ -92,6 +115,9 @@ class Activity {
           detail == other.detail &&
           repeatType == other.repeatType &&
           repeatConfig == other.repeatConfig &&
+          useNotification == other.useNotification &&
+          notificationTime == other.notificationTime &&
+          isNotificationPersistent == other.isNotificationPersistent &&
           createdAt == other.createdAt &&
           updatedAt == other.updatedAt;
 
@@ -102,6 +128,9 @@ class Activity {
       detail.hashCode ^
       repeatType.hashCode ^
       repeatConfig.hashCode ^
+      useNotification.hashCode ^
+      notificationTime.hashCode ^
+      isNotificationPersistent.hashCode ^
       createdAt.hashCode ^
       updatedAt.hashCode;
 }

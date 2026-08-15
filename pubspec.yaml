@@ -29,6 +29,11 @@ dependencies:
   uuid: ^4.5.1
   intl: ^0.20.1
 
+  # Notifications
+  flutter_local_notifications: ^18.0.1
+  flutter_timezone: ^3.0.1
+  timezone: ^0.9.4
+
   # File Operations
   file_picker: ^8.1.6
   path_provider: ^2.1.5
