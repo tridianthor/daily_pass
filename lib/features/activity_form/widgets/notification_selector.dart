@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:intl/intl.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../../core/constants/app_spacing.dart';
@@ -87,10 +88,12 @@ class NotificationSelector extends StatelessWidget {
             onSelectionChanged: (Set<bool> selected) {
               if (selected.isNotEmpty) {
                 final enable = selected.first;
-                if (enable) {
-                  AppNotificationService().requestPermissions();
-                }
                 onNotificationToggled(enable);
+                if (enable) {
+                  SchedulerBinding.instance.addPostFrameCallback((_) {
+                    AppNotificationService().requestPermissions();
+                  });
+                }
               }
             },
           ),

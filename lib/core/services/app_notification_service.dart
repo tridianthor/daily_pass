@@ -1,5 +1,6 @@
 import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart' show PlatformException;
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
@@ -11,8 +12,7 @@ import '../../models/repeat_type.dart';
 Future<void> notificationTapBackground(NotificationResponse notificationResponse) async {
   debugPrint('Background notification action clicked: ${notificationResponse.actionId}, id: ${notificationResponse.id}');
   if (notificationResponse.actionId == AppNotificationService.dismissActionId && notificationResponse.id != null) {
-    final plugin = FlutterLocalNotificationsPlugin();
-    await plugin.cancel(notificationResponse.id!);
+    await AppNotificationService().cancelActivityNotificationById(notificationResponse.id!);
   }
 }
 
@@ -33,6 +33,24 @@ class AppNotificationService {
   static const String regularChannelDescription = 'Reminders for daily activities';
 
   static const String dismissActionId = 'dismiss_action';
+
+  static final AndroidNotificationChannel _persistentChannel = AndroidNotificationChannel(
+    persistentChannelId,
+    persistentChannelName,
+    description: persistentChannelDescription,
+    importance: Importance.max,
+    playSound: true,
+    enableVibration: true,
+  );
+
+  static final AndroidNotificationChannel _regularChannel = AndroidNotificationChannel(
+    regularChannelId,
+    regularChannelName,
+    description: regularChannelDescription,
+    importance: Importance.max,
+    playSound: true,
+    enableVibration: true,
+  );
 
   Future<void> initialize() async {
     if (_isInitialized) return;
@@ -86,26 +104,8 @@ class AppNotificationService {
         final androidPlugin = _notificationsPlugin
             .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
         if (androidPlugin != null) {
-          await androidPlugin.createNotificationChannel(
-            const AndroidNotificationChannel(
-              persistentChannelId,
-              persistentChannelName,
-              description: persistentChannelDescription,
-              importance: Importance.max,
-              playSound: true,
-              enableVibration: true,
-            ),
-          );
-          await androidPlugin.createNotificationChannel(
-            const AndroidNotificationChannel(
-              regularChannelId,
-              regularChannelName,
-              description: regularChannelDescription,
-              importance: Importance.max,
-              playSound: true,
-              enableVibration: true,
-            ),
-          );
+          await androidPlugin.createNotificationChannel(_persistentChannel);
+          await androidPlugin.createNotificationChannel(_regularChannel);
         }
       }
     } catch (e) {
@@ -120,7 +120,11 @@ class AppNotificationService {
         final androidImplementation = _notificationsPlugin
             .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
         await androidImplementation?.requestNotificationsPermission();
-        await androidImplementation?.requestExactAlarmsPermission();
+        try {
+          await androidImplementation?.requestExactAlarmsPermission();
+        } catch (e) {
+          debugPrint('Exact alarm permission request failed (non-critical): $e');
+        }
       } else if (Platform.isIOS || Platform.isMacOS) {
         final iosImplementation = _notificationsPlugin
             .resolvePlatformSpecificImplementation<IOSFlutterLocalNotificationsPlugin>();
@@ -290,7 +294,6 @@ class AppNotificationService {
       priority: Priority.high,
       ongoing: isPersistent,
       autoCancel: !isPersistent,
-      additionalFlags: isPersistent ? Int32List.fromList([32, 2]) : null,
       actions: isPersistent
           ? <AndroidNotificationAction>[
               const AndroidNotificationAction(
@@ -328,16 +331,20 @@ class AppNotificationService {
   Future<void> scheduleActivityNotification(Activity activity) async {
     final notifId = getNotificationId(activity.id);
 
-    // Cancel any previous notification for this activity
     await cancelActivityNotification(activity.id);
 
-    if (!activity.useNotification) return;
+    if (!activity.useNotification) {
+      debugPrint('Notification skipped for "${activity.name}": useNotification is false');
+      return;
+    }
 
     final nextTrigger = calculateNextTrigger(activity: activity);
     if (nextTrigger == null) {
       debugPrint('No upcoming notification trigger for activity: ${activity.name}');
       return;
     }
+
+    debugPrint('Scheduling notification for "${activity.name}" at $nextTrigger (id: $notifId)');
 
     final notificationDetails = _buildNotificationDetails(
       isPersistent: activity.isNotificationPersistent,
@@ -374,9 +381,11 @@ class AppNotificationService {
         matchDateTimeComponents: matchComponents,
         payload: activity.id,
       );
-      debugPrint('Scheduled notification for "${activity.name}" at $nextTrigger (id: $notifId)');
+      debugPrint('Successfully scheduled notification for "${activity.name}" at $nextTrigger (id: $notifId)');
+    } on PlatformException catch (e) {
+      debugPrint('PlatformException scheduling notification for "${activity.name}": code=${e.code}, message=${e.message}');
     } catch (e) {
-      debugPrint('Failed to schedule notification (expected in test): $e');
+      debugPrint('Failed to schedule notification for "${activity.name}": $e');
     }
   }
 
@@ -386,6 +395,14 @@ class AppNotificationService {
       await _notificationsPlugin.cancel(notifId);
     } catch (e) {
       debugPrint('Failed to cancel notification: $e');
+    }
+  }
+
+  Future<void> cancelActivityNotificationById(int notificationId) async {
+    try {
+      await _notificationsPlugin.cancel(notificationId);
+    } catch (e) {
+      debugPrint('Failed to cancel notification by id: $e');
     }
   }
 
