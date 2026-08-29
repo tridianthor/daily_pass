@@ -8,7 +8,13 @@
         {
             "name": "daily_pass",
             "request": "launch",
-            "type": "dart"
+            "type": "dart",
+            "args": [
+                "--dart-define=ERROR_LOGGING_ENABLED=true",
+                "--dart-define=ERROR_LOGGING_ENVIRONMENT=development",
+                "--dart-define=ERROR_LOGGING_PROJECT_KEY=pk_live_I14DrqeLv7wPUlqKpYjapNQVVEnaBBb7I9tkiYUTQIs",
+                "--dart-define=ERROR_LOGGING_BASE_URL=http://192.168.18.3:8001"
+            ]
         },
         {
             "name": "daily_pass (profile mode)",

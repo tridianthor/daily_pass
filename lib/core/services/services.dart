@@ -5,3 +5,4 @@ export 'completion_service.dart';
 export 'settings_service.dart';
 export 'export_service.dart';
 export 'import_service.dart';
+export 'error_logging_service.dart';
