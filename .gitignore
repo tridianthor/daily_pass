@@ -46,3 +46,6 @@ app.*.map.json
 
 AGENT.*
 .agents/
+
+# FVM Version Cache
+.fvm/
