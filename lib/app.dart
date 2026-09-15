@@ -22,47 +22,87 @@ class DailyPassApp extends ConsumerWidget {
     );
   }
 
-  ThemeData _buildLightTheme() => ThemeData(
-    useMaterial3: true,
-    brightness: Brightness.light,
-    colorScheme: ColorScheme.fromSeed(
-      seedColor: AppColors.primary,
+  ThemeData _buildLightTheme() {
+    final colorScheme = ColorScheme.fromSeed(
+      seedColor: AppColors.lightPrimary,
       brightness: Brightness.light,
-    ),
-    scaffoldBackgroundColor: AppColors.lightBackground,
-    appBarTheme: const AppBarTheme(
-      backgroundColor: AppColors.lightSurface,
-      foregroundColor: AppColors.lightOnSurface,
-      elevation: 0,
-    ),
-    cardTheme: CardThemeData(
-      color: AppColors.lightSurface,
-      elevation: 1,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-    ),
-    floatingActionButtonTheme: const FloatingActionButtonThemeData(
-      backgroundColor: AppColors.primary,
-      foregroundColor: Colors.white,
-    ),
-  );
+    ).copyWith(
+      primary: AppColors.lightPrimary,
+      onPrimary: AppColors.lightOnPrimary,
+      secondary: AppColors.lightSecondary,
+      onSecondary: AppColors.lightOnSecondary,
+      tertiary: AppColors.lightTertiary,
+      onTertiary: AppColors.lightOnTertiary,
+      surface: AppColors.lightSurface,
+      onSurface: AppColors.lightOnSurface,
+      error: AppColors.lightError,
+      onError: AppColors.lightOnError,
+      errorContainer: AppColors.lightErrorContainer,
+      onErrorContainer: AppColors.lightOnErrorContainer,
+      surfaceTint: AppColors.lightPrimary,
+    );
 
-  ThemeData _buildDarkTheme() => ThemeData(
-    useMaterial3: true,
-    brightness: Brightness.dark,
-    colorScheme: ColorScheme.fromSeed(
-      seedColor: AppColors.primary,
+    return ThemeData(
+      useMaterial3: true,
+      brightness: Brightness.light,
+      colorScheme: colorScheme,
+      scaffoldBackgroundColor: colorScheme.surface,
+      appBarTheme: AppBarTheme(
+        backgroundColor: colorScheme.surface,
+        foregroundColor: colorScheme.onSurface,
+        elevation: 0,
+      ),
+      cardTheme: CardThemeData(
+        color: colorScheme.surface,
+        elevation: 1,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
+        backgroundColor: colorScheme.primary,
+        foregroundColor: colorScheme.onPrimary,
+      ),
+    );
+  }
+
+  ThemeData _buildDarkTheme() {
+    final colorScheme = ColorScheme.fromSeed(
+      seedColor: AppColors.darkPrimary,
       brightness: Brightness.dark,
-    ),
-    scaffoldBackgroundColor: AppColors.darkBackground,
-    appBarTheme: const AppBarTheme(
-      backgroundColor: AppColors.darkSurface,
-      foregroundColor: AppColors.darkOnSurface,
-      elevation: 0,
-    ),
-    cardTheme: CardThemeData(
-      color: AppColors.darkSurface,
-      elevation: 1,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-    ),
-  );
+    ).copyWith(
+      primary: AppColors.darkPrimary,
+      onPrimary: AppColors.darkOnPrimary,
+      secondary: AppColors.darkSecondary,
+      onSecondary: AppColors.darkOnSecondary,
+      tertiary: AppColors.darkTertiary,
+      onTertiary: AppColors.darkOnTertiary,
+      surface: AppColors.darkSurface,
+      onSurface: AppColors.darkOnSurface,
+      error: AppColors.darkError,
+      onError: AppColors.darkOnError,
+      errorContainer: AppColors.darkErrorContainer,
+      onErrorContainer: AppColors.darkOnErrorContainer,
+      surfaceTint: AppColors.darkPrimary,
+    );
+
+    return ThemeData(
+      useMaterial3: true,
+      brightness: Brightness.dark,
+      colorScheme: colorScheme,
+      scaffoldBackgroundColor: colorScheme.surface,
+      appBarTheme: AppBarTheme(
+        backgroundColor: colorScheme.surface,
+        foregroundColor: colorScheme.onSurface,
+        elevation: 0,
+      ),
+      cardTheme: CardThemeData(
+        color: colorScheme.surface,
+        elevation: 1,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
+        backgroundColor: colorScheme.primary,
+        foregroundColor: colorScheme.onPrimary,
+      ),
+    );
+  }
 }

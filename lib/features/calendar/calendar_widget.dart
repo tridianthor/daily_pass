@@ -16,7 +16,7 @@ class CalendarWidget extends ConsumerWidget {
     final selectedDate = ref.watch(selectedDateProvider);
     final focusedMonth = ref.watch(focusedMonthProvider);
     final weekStartDay = ref.watch(weekStartDayProvider);
-    
+
     final colorScheme = Theme.of(context).colorScheme;
     final textColor = colorScheme.onSurface;
     final weekendColor = colorScheme.error;
@@ -28,9 +28,10 @@ class CalendarWidget extends ConsumerWidget {
       lastDay: DateTime.utc(2030, 12, 31),
       focusedDay: focusedMonth,
       selectedDayPredicate: (day) => isSameDay(selectedDate, day),
-      startingDayOfWeek: weekStartDay == 0
-          ? StartingDayOfWeek.sunday
-          : StartingDayOfWeek.monday,
+      startingDayOfWeek:
+          weekStartDay == 0
+              ? StartingDayOfWeek.sunday
+              : StartingDayOfWeek.monday,
       calendarFormat: CalendarFormat.month,
       sixWeekMonthsEnforced: false,
       rowHeight: 42.0,
@@ -50,81 +51,77 @@ class CalendarWidget extends ConsumerWidget {
           fontWeight: FontWeight.w600,
           color: headerColor,
         ),
-        leftChevronIcon: Icon(
-          Icons.chevron_left,
-          color: chevronColor,
-        ),
-        rightChevronIcon: Icon(
-          Icons.chevron_right,
-          color: chevronColor,
+        leftChevronIcon: Icon(Icons.chevron_left, color: chevronColor),
+        rightChevronIcon: Icon(Icons.chevron_right, color: chevronColor),
+      ),
+      daysOfWeekStyle: DaysOfWeekStyle(
+        weekdayStyle: TextStyle(color: textColor, fontWeight: FontWeight.w500),
+        weekendStyle: TextStyle(
+          color: weekendColor,
+          fontWeight: FontWeight.w500,
         ),
       ),
-        daysOfWeekStyle: DaysOfWeekStyle(
-          weekdayStyle: TextStyle(
-            color: textColor,
-            fontWeight: FontWeight.w500,
-          ),
-          weekendStyle: TextStyle(
-            color: weekendColor,
-            fontWeight: FontWeight.w500,
-          ),
+      calendarStyle: CalendarStyle(
+        todayDecoration: BoxDecoration(
+          color: colorScheme.primary.withValues(alpha: 0.3),
+          shape: BoxShape.circle,
         ),
-        calendarStyle: CalendarStyle(
-          todayDecoration: BoxDecoration(
-            color: AppColors.primary.withValues(alpha: 0.3),
-            shape: BoxShape.circle,
-          ),
-          todayTextStyle: TextStyle(
-            color: textColor,
-            fontWeight: FontWeight.w600,
-          ),
-          selectedDecoration: BoxDecoration(
-            color: AppColors.primary,
-            shape: BoxShape.circle,
-          ),
-          selectedTextStyle: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w600,
-          ),
-          defaultTextStyle: TextStyle(
-            color: textColor,
-          ),
-          weekendTextStyle: TextStyle(
-            color: weekendColor,
-            fontWeight: FontWeight.w500,
-          ),
-          outsideDaysVisible: false,
-          markersMaxCount: 0, // Disable dots, we use background colors
-          cellMargin: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
+        todayTextStyle: TextStyle(
+          color: textColor,
+          fontWeight: FontWeight.w600,
         ),
-        onDaySelected: (selectedDay, focusedDay) {
-          final now = DateTime.now();
-          final today = DateTime(now.year, now.month, now.day);
-          final normalizedSelected = DateTime(
-            selectedDay.year,
-            selectedDay.month,
-            selectedDay.day,
-          );
-          if (normalizedSelected.isBefore(today)) {
-            return;
-          }
-          ref.read(selectedDateProvider.notifier).state = selectedDay;
-          ref.read(focusedMonthProvider.notifier).state = DateTime(
-            focusedDay.year,
-            focusedDay.month,
-            1,
-          );
-        },
-        onPageChanged: (focusedDay) {
-          ref.read(focusedMonthProvider.notifier).state = DateTime(focusedDay.year, focusedDay.month, 1);
-        },
-        calendarBuilders: CalendarBuilders(
-          defaultBuilder: (context, day, focusedDay) => _DateCell(day: day),
-          todayBuilder: (context, day, focusedDay) => _DateCell(day: day, isToday: true),
-          selectedBuilder: (context, day, focusedDay) => _DateCell(day: day, isSelected: true),
-          disabledBuilder: (context, day, focusedDay) => _DateCell(day: day, isDisabled: true),
+        selectedDecoration: BoxDecoration(
+          color: colorScheme.primary,
+          shape: BoxShape.circle,
         ),
-      );
+        selectedTextStyle: TextStyle(
+          color: colorScheme.onPrimary,
+          fontWeight: FontWeight.w600,
+        ),
+        defaultTextStyle: TextStyle(color: textColor),
+        weekendTextStyle: TextStyle(
+          color: weekendColor,
+          fontWeight: FontWeight.w500,
+        ),
+        outsideDaysVisible: false,
+        markersMaxCount: 0, // Disable dots, we use background colors
+        cellMargin: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
+      ),
+      onDaySelected: (selectedDay, focusedDay) {
+        final now = DateTime.now();
+        final today = DateTime(now.year, now.month, now.day);
+        final normalizedSelected = DateTime(
+          selectedDay.year,
+          selectedDay.month,
+          selectedDay.day,
+        );
+        if (normalizedSelected.isBefore(today)) {
+          return;
+        }
+        ref.read(selectedDateProvider.notifier).state = selectedDay;
+        ref.read(focusedMonthProvider.notifier).state = DateTime(
+          focusedDay.year,
+          focusedDay.month,
+          1,
+        );
+      },
+      onPageChanged: (focusedDay) {
+        ref.read(focusedMonthProvider.notifier).state = DateTime(
+          focusedDay.year,
+          focusedDay.month,
+          1,
+        );
+      },
+      calendarBuilders: CalendarBuilders(
+        defaultBuilder: (context, day, focusedDay) => _DateCell(day: day),
+        todayBuilder:
+            (context, day, focusedDay) => _DateCell(day: day, isToday: true),
+        selectedBuilder:
+            (context, day, focusedDay) => _DateCell(day: day, isSelected: true),
+        disabledBuilder:
+            (context, day, focusedDay) => _DateCell(day: day, isDisabled: true),
+      ),
+    );
   }
 }
 
@@ -145,7 +142,7 @@ class _DateCell extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final statusAsync = ref.watch(dateIndicatorProvider(day));
-    
+
     return statusAsync.when(
       data: (status) => _buildCell(context, status),
       loading: () => _buildCell(context, DateIndicatorStatus.none),
@@ -158,7 +155,7 @@ class _DateCell extends ConsumerWidget {
     final textColor = colorScheme.onSurface;
     final weekendColor = colorScheme.error;
     final isWeekend = day.weekday == 6 || day.weekday == 7;
-    
+
     Color? backgroundColor;
     Color textCol;
     FontWeight fontWeight = FontWeight.normal;
@@ -171,11 +168,11 @@ class _DateCell extends ConsumerWidget {
         backgroundColor = AppColors.pastelGreen.withValues(alpha: 0.5);
       }
     } else if (isSelected) {
-      backgroundColor = AppColors.primary;
-      textCol = Colors.white;
+      backgroundColor = colorScheme.primary;
+      textCol = colorScheme.onPrimary;
       fontWeight = FontWeight.w600;
     } else if (isToday) {
-      backgroundColor = AppColors.primary.withValues(alpha: 0.3);
+      backgroundColor = colorScheme.primary.withValues(alpha: 0.3);
       textCol = textColor;
       fontWeight = FontWeight.w600;
     } else {
@@ -200,17 +197,11 @@ class _DateCell extends ConsumerWidget {
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        shape: BoxShape.circle,
-      ),
+      decoration: BoxDecoration(color: backgroundColor, shape: BoxShape.circle),
       child: Center(
         child: Text(
           '${day.day}',
-          style: TextStyle(
-            color: textCol,
-            fontWeight: fontWeight,
-          ),
+          style: TextStyle(color: textCol, fontWeight: fontWeight),
         ),
       ),
     );
